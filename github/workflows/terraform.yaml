@@ -1,0 +1,61 @@
+name: Terraform GHA
+on:
+  push:
+    branches:
+      - main
+env:
+  DIRECTORY: directory-to-run-terraform
+  PROJECT_NO: 392622968784
+  PROJECT_ID: bearmoo-cloud-net
+  TERRAFORM_VERSION: 1.5.7
+
+jobs:
+  terraform:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - id: 'auth'
+      name: 'Authenticate to Google Cloud'
+      uses: 'google-github-actions/auth@v1'
+      with:
+        create_credentials_file: 'true'
+        workload_identity_provider: 'projects/${{env.PROJECT_NO}}/locations/global/workloadIdentityPools/gh-terraform/providers/gh-terraform-provider'
+        # Below are from the above terraform code 
+        # workloadIdentityPools = gh-identity-pool
+        # providers/gh-provider'
+        service_account: 'github-terraform@${{env.PROJECT_ID}}.iam.gserviceaccount.com'
+
+    - name: configure gcloud
+      run: |
+        gcloud config set project ${{env.PROJECT_ID}}
+
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v3
+      with:
+        terraform_version: ${{ env.TERRAFORM_VER }}
+
+    - name: Terraform Init
+      working-directory: ${{ env.DIRECTORY }}
+      run: terraform init
+
+    - name: Terraform Plan
+      working-directory: ${{ env.DIRECTORY }}
+      run: terraform plan -out=plan
+
+    - name: save terraform plan
+      working-directory: ${{ env.DIRECTORY }}/plan
+      run: gcloud storage cp ${{ env.DIRECTORY }}/plan gs://bearmoo-tf-state-bucket/TF-plan
+
+    - name: Download Terraform Plan
+      if: ${{ github.branches == 'main' }}
+      run: gcloud storage cp gs://bearmoo-tf-state-bucket/TF-plan ${{ env.DIRECTORY }}/plan
+
+    - name: Terraform Apply
+      if: ${{ github.branches == 'main' }}
+      working-directory: ${{ env.DIRECTORY }}
+      run: terraform apply -auto-approve ${{ env.DIRECTORY }}/plan
