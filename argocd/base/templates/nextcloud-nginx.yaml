@@ -1,0 +1,61 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: nextcloud-nginx
+  namespace: argocd
+spec:
+  destination:
+    namespace: webservers
+    server: https://kubernetes.default.svc
+  project: default
+  source:
+    helm:
+      valueFiles:
+        - 'secrets://secrets.yaml'
+      parameters:
+      - name: configmap_data.redishost
+        value: redis-headless.redis
+      - name: configmap_data.s3bucket
+        value: cloud-user-data
+      - name: configmap_data.version
+        value: 25.0.11.1
+      - name: autoscaling.minReplicas
+        value: "0"
+      - name: replicaCount
+        value: "2"
+      - name: image.tag
+        value: "9423884709-30"
+      values: |-
+        ingress:
+          enabled: true
+          annotations:
+            cert-manager.io/cluster-issuer: wild-bearmoo-net-prod
+            kubernetes.io/ingress.class: nginx
+            kubernetes.io/tls-acme: "true"
+            nginx.ingress.kubernetes.io/http2-push-preload: "true"
+            nginx.ingress.kubernetes.io/proxy-body-size: "0"
+            nginx.ingress.kubernetes.io/secure-backends: "true"
+            nginx.ingress.kubernetes.io/ssl-ciphers: ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384
+
+          hosts:
+            - host: cloud.bearmoo.net
+              paths:
+              - /
+
+          tls:
+          - secretName: wild-bearmoo-net-prod
+            hosts:
+            - '*.bearmoo.net'
+            - bearmoo.net
+          resources:
+            limits:
+              cpu: 250m
+              memory: 512Mi
+          requests:
+            cpu: 100m
+            memory: 256Mi
+    path: helm/nextcloud-nginx
+    repoURL: https://github.com/bearmoo-cloud-net/nextcloud-nginx.git
+    targetRevision: HEAD
+  syncPolicy:
+    automated: {}

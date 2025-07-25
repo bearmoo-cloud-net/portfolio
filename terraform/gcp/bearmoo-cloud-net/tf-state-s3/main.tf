@@ -1,4 +1,4 @@
-#This is a bucket for TF state
+#This is a bucket for TF state (us-east-1)
 resource "google_storage_bucket" "tf-state-bucket" {
   project       = "bearmoo-cloud-net"
   name          = "bearmoo-tf-state-bucket"

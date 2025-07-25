@@ -1,0 +1,25 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  labels:
+    app: nextcloud-nginx
+  name: nextcloud-nginx-configmap
+data:
+  DBHOST: {{ .Values.configmap_data.dbhost }}
+  INSTANCEID: {{ .Values.configmap_data.instanceid }}
+  IntIpAddress: {{ .Values.configmap_data.intipaddress }}
+  LOGLEVEL: "{{ .Values.configmap_data.loglevel }}"
+  MAILDOMAIN: {{ .Values.configmap_data.maildomain }}
+  MAILSMTPHOST: {{ .Values.configmap_data.mailsmtphost }}
+  OVERWRITEURL: {{ .Values.configmap_data.overwriteurl }}
+  S3BUCKET: {{ .Values.configmap_data.s3bucket }}
+  S3HOSTNAME: {{ .Values.configmap_data.s3hostname }}
+  TRUSTEDDOMAIN: {{ .Values.configmap_data.trusteddomain }}
+  VERSION: {{ .Values.configmap_data.version }}
+  SESSION_SAVE_HANDLE_TYPE: {{ .Values.configmap_data.session_type }}
+  sessionsave: {{ .Values.configmap_data.sessionsave }}
+  SESSION_SAVE_HANDLE_SETTING: {{ .Values.configmap_data.sessions_settings }}
+  REDISHOST: {{ .Values.configmap_data.redishost }}
+  REDISPORT: "{{ .Values.configmap_data.redisport }}"
+  REDISDATABASE: "{{ .Values.configmap_data.redisdatabase }}"
+  MAILFROM: "{{ .Values.configmap_data.mailfrom }}"

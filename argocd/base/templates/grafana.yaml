@@ -1,0 +1,21 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: grafana
+  namespace: argocd
+spec:
+  destination:
+    namespace: monitoring
+    server: https://kubernetes.default.svc
+  project: default
+  source:
+    path: helm/grafana
+    repoURL: https://github.com/bearmoo-cloud-net/argocd-deploy.git
+    targetRevision: HEAD
+    helm:
+      valueFiles:
+        - secrets://secrets.yaml
+  syncPolicy:
+    automated: {}
+    syncOptions:
+    - CreateNamespace=true
